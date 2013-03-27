@@ -36,7 +36,7 @@ class blizzBlue_Widget extends WP_Widget {
 		$instance = wp_parse_args( (array) $instance, $defaults ); ?>
 
 		<p>
-			<label for="<?php echo $this->get_field_id( 'liveFeed' ); ?>">Use Live Feed? (High traffic websites should use "No". List updated every 20 minutes to reduce traffic against Blizzard)</label>
+			<label for="<?php echo $this->get_field_id( 'liveFeed' ); ?>">Use Live Feed? (High traffic websites should use "No". If your are receiving CURL error with live feed, try "No")</label>
 
 			<select id="<?php echo $this->get_field_id( 'liveFeed' ); ?>" name="<?php echo $this->get_field_name( 'liveFeed'); ?>" class="widefat" style="width:100%;">
 				<option <?php if ( 'Yes' == $instance['liveFeed']) echo 'selected="selected"'; ?>>Yes</option>
@@ -91,7 +91,11 @@ class blizzBlue_Widget extends WP_Widget {
 
 			<select id="<?php echo $this->get_field_id( 'gameRegion' ); ?>" name="<?php echo $this->get_field_name( 'gameRegion' ); ?>" class="widefat" style="width:100%;">
 				<option <?php if ( 'US' == $instance['gameRegion'] ) echo 'selected="selected"'; ?>>US</option>
-				<option <?php if ( 'EU' == $instance['gameRegion'] ) echo 'selected="selected"'; ?>>EU</option>
+				<option <?php if ( 'EU-EN' == $instance['gameRegion'] ) echo 'selected="selected"'; ?>>EU</option>
+				<option <?php if ( 'FR' == $instance['gameRegion'] ) echo 'selected="selected"'; ?>>FR</option>
+				<option <?php if ( 'DE' == $instance['gameRegion'] ) echo 'selected="selected"'; ?>>DE</option>
+				<option <?php if ( 'EU-ES' == $instance['gameRegion'] ) echo 'selected="selected"'; ?>>EU-ES</option>
+				<option <?php if ( 'US-ES' == $instance['gameRegion'] ) echo 'selected="selected"'; ?>>US-ES</option>
 			</select>
 				
 		</p>
@@ -125,59 +129,114 @@ class blizzBlue_Widget extends WP_Widget {
 
 	function getfileurl($region, $game)
 	{
-		if($region === 'US'){		
-			if($game  === 'Starcraft')
-				return "http://www.wrclan.com/wp-content/plugins/BlizzBlueWidget/sc2Tracker.txt";
-				else if ($game === 'Warcraft')
-					return "http://www.wrclan.com/wp-content/plugins/BlizzBlueWidget/WoWTracker.txt";
-					else if ($game === 'Diablo')
-						return "http://www.wrclan.com/wp-content/plugins/BlizzBlueWidget/D3Tracker.txt";
-					
-		}else if ($region === 'EU'){
-			if($game  === 'Starcraft')
-				return "http://www.wrclan.com/wp-content/plugins/BlizzBlueWidget/EUsc2Tracker.txt";
-				else if ($game === 'Warcraft')
-					return "http://www.wrclan.com/wp-content/plugins/BlizzBlueWidget/EUWoWTracker.txt";
-					else if ($game === 'Diablo')
-						return "http://www.wrclan.com/wp-content/plugins/BlizzBlueWidget/EUD3Tracker.txt";
+		$gameStr;
+		switch ($game) {
+			case 'Starcraft':
+				$gameStr = 'sc2';
+				break;
+			case 'Warcraft':
+				$gameStr = 'WoW';
+				break;
+			case 'Diablo':
+				$gameStr = 'D3';
+				break;
+			default:
+				$regionStr = 'sc2';
 		}
-		
-		//If nothing set return sc2Tracker
-		return "http://www.wrclan.com/wp-content/plugins/BlizzBlueWidget/sc2Tracker.txt";
+
+		$regionStr;
+		switch($region){
+			case 'US':
+				$regionStr = '';
+				break;
+			case 'EU-EN':
+				$regionStr = 'EU';
+				break;
+			case 'FR':
+				$regionStr = 'EUFR';
+				break;
+			case 'DE':
+				$regionStr = 'EUDE';
+				break;
+			case 'EU-ES':
+				$regionStr = 'EUES';
+				break;
+			case 'US-ES':
+				$regionStr = 'USES';
+				break;
+			default:
+				$regionStr = '';
+		}
+
+		return "http://www.wrclan.com/wp-content/plugins/BlizzBlueWidget/" . $regionStr . $gameStr . "Tracker.txt";
 	
 	}
 	function get_liveFeed($region, $game)
 	{
-		$url = "http://us.battle.net/sc2/en/forum/blizztracker/";
-	
-		if($region === 'US'){		
-			if($game  === 'Starcraft')
-				$url = "http://us.battle.net/sc2/en/forum/blizztracker/";
-				else if ($game === 'Warcraft')
-					$url = "http://us.battle.net/wow/en/forum/blizztracker/";
-					else if ($game === 'Diablo')
-						$url = "http://us.battle.net/d3/en/forum/blizztracker/";
-					
-		}else if ($region === 'EU'){
-			if($game  === 'Starcraft')
-				$url = "http://eu.battle.net/sc2/en/forum/blizztracker/";
-				else if ($game === 'Warcraft')
-					$url = "http://eu.battle.net/wow/en/forum/blizztracker/";
-					else if ($game === 'Diablo')
-						$url = "http://eu.battle.net/d3/en/forum/blizztracker/";
+		$gameStr;
+		switch ($game) {
+			case 'Starcraft':
+				$gameStr = 'sc2';
+				break;
+			case 'Warcraft':
+				$gameStr = 'wow';
+				break;
+			case 'Diablo':
+				$gameStr = 'd3';
+				break;
+			default:
+				$regionStr = 'sc2';
 		}
 
+		$regionStr;
+		$serverStr;
+		switch($region){
+			case 'US':
+				$regionStr = '';
+				$serverStr = 'us';
+				break;
+			case 'EU-EN':
+				$regionStr = 'EU';
+				$serverStr = 'eu';
+				break;
+			case 'FR':
+				$regionStr = 'EUFR';
+				$serverStr = 'eu';
+				break;
+			case 'DE':
+				$regionStr = 'EUDE';
+				$serverStr = 'eu';
+				break;
+			case 'EU-ES':
+				$regionStr = 'EUES';
+				$serverStr = 'eu';
+				break;
+			case 'US-ES':
+				$regionStr = 'USES';
+				$serverStr = 'us';
+				break;
+			default:
+				$regionStr = '';
+				$serverStr = 'us';
+		}
+
+
+
+		$url = "http://" . $serverStr . ".battle.net/" . $gameStr . "/en/forum/blizztracker/";
 		
+		try{
+			$ch = curl_init();
+	 		$timeout = 5;
+	  		curl_setopt($ch,CURLOPT_URL,$url);
+	  		curl_setopt($ch,CURLOPT_RETURNTRANSFER,1);
+	  		curl_setopt($ch,CURLOPT_CONNECTTIMEOUT,$timeout);
+	  		$data = curl_exec($ch);
+	  		curl_close($ch);
 
-  		$ch = curl_init();
- 		$timeout = 5;
-  		curl_setopt($ch,CURLOPT_URL,$url);
-  		curl_setopt($ch,CURLOPT_RETURNTRANSFER,1);
-  		curl_setopt($ch,CURLOPT_CONNECTTIMEOUT,$timeout);
-  		$data = curl_exec($ch);
-  		curl_close($ch);
-
-  		return $data;
+	  		return $data;
+		} catch (Exception $e) {
+			echo "Error Retrieving Blue posts. CURL error : " . $e->getMessage(); 
+		}
 	}
 	
 	function widget( $args, $instance ) {
