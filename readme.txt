@@ -1,9 +1,9 @@
 === BlizzBlue-Widget ===
 Contributors: senatorsfc
 Tags: Starcraft, Blue posts, forum posts, Diablo, Warcraft, Blizzard
-Requires at least: 2.0.2
-Tested up to: 3.3
-Stable tag: 2.1
+Requires at least: 3.0
+Tested up to: 3.5.1
+Stable tag: 3.0
 
 
 Adds a widget to your wordpress theme that gets the latest blue posts for Starcraft 2, Diablo 3 and WoW. 
@@ -26,6 +26,9 @@ The update might have included some changes which require you to re-save the wid
 
 == Changelog ==
 
+= 3.0 =
+* Some bug fixes, added other languages.
+
 = 2.1 =
 * Bug Fix : When Battle.net website is down the plugin will access a cached copy of the website stored on my private server. If the plugin cannot access either of the sources, a message will indicate that no blue posts are available at this time.
 
@@ -41,6 +44,9 @@ The update might have included some changes which require you to re-save the wid
 
 
 == Upgrade Notice ==
+
+= 3.0 =
+* Bug fixes, added other languages
 
 = 2.1 =
 * Bug fix for when battle.net website is down. Will not show the strpos error message.

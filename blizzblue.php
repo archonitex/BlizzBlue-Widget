@@ -4,9 +4,9 @@ Plugin Name: BlizzBlueWidget
 Plugin URI: http://dev.wrclan.com/
 Description: Adds a widget to your wordpress theme that gets the latest blue posts for Starcraft 2, Diablo 3 and WoW.
 Author: Francis Carriere
-Version: 2.1
-Author URI: http://dev.wrclan.com/
-Stable tag: 2.1
+Version: 3.0
+Author URI: http://wrclan.com/
+Stable tag: 3.0
 */
 
 /* Add our function to the widgets_init hook. */
@@ -91,7 +91,7 @@ class blizzBlue_Widget extends WP_Widget {
 
 			<select id="<?php echo $this->get_field_id( 'gameRegion' ); ?>" name="<?php echo $this->get_field_name( 'gameRegion' ); ?>" class="widefat" style="width:100%;">
 				<option <?php if ( 'US' == $instance['gameRegion'] ) echo 'selected="selected"'; ?>>US</option>
-				<option <?php if ( 'EU-EN' == $instance['gameRegion'] ) echo 'selected="selected"'; ?>>EU</option>
+				<option <?php if ( 'EU-EN' == $instance['gameRegion'] ) echo 'selected="selected"'; ?>>EU-EN</option>
 				<option <?php if ( 'FR' == $instance['gameRegion'] ) echo 'selected="selected"'; ?>>FR</option>
 				<option <?php if ( 'DE' == $instance['gameRegion'] ) echo 'selected="selected"'; ?>>DE</option>
 				<option <?php if ( 'EU-ES' == $instance['gameRegion'] ) echo 'selected="selected"'; ?>>EU-ES</option>
@@ -192,37 +192,37 @@ class blizzBlue_Widget extends WP_Widget {
 		$serverStr;
 		switch($region){
 			case 'US':
-				$regionStr = '';
+				$regionStr = 'en';
 				$serverStr = 'us';
 				break;
 			case 'EU-EN':
-				$regionStr = 'EU';
+				$regionStr = 'en';
 				$serverStr = 'eu';
 				break;
 			case 'FR':
-				$regionStr = 'EUFR';
+				$regionStr = 'fr';
 				$serverStr = 'eu';
 				break;
 			case 'DE':
-				$regionStr = 'EUDE';
+				$regionStr = 'de';
 				$serverStr = 'eu';
 				break;
 			case 'EU-ES':
-				$regionStr = 'EUES';
+				$regionStr = 'es';
 				$serverStr = 'eu';
 				break;
 			case 'US-ES':
-				$regionStr = 'USES';
+				$regionStr = 'es';
 				$serverStr = 'us';
 				break;
 			default:
-				$regionStr = '';
+				$regionStr = 'en';
 				$serverStr = 'us';
 		}
 
 
 
-		$url = "http://" . $serverStr . ".battle.net/" . $gameStr . "/en/forum/blizztracker/";
+		$url = "http://" . $serverStr . ".battle.net/" . $gameStr . "/" . $regionStr . "/forum/blizztracker/";
 		
 		try{
 			$ch = curl_init();
@@ -274,15 +274,16 @@ class blizzBlue_Widget extends WP_Widget {
 		$myStart = strpos($myFile,"<tbody class=\"bluetracker-body\">");
 		if($myStart === false){
 			if($liveFeed === 'No'){
-				$myFile = $this->get_liveFeed($gameRegion,$gameToShow);				
-			}else{
 				$fileURL = $this->getFileURL($gameRegion,$gameToShow);
-				$myFile = file_get_contents($fileURL);				
+				$myFile = file_get_contents($fileURL);
+			}else{
+				$myFile = $this->get_liveFeed($gameRegion,$gameToShow);				
 			}
 			
 			$myStart = strpos($myFile,"<tbody class=\"bluetracker-body\">");
 			if($myStart === false){
 				echo 'No Blue Posts Available';
+				echo $after_widget;
 				return;
 			}
 		}
@@ -296,6 +297,53 @@ class blizzBlue_Widget extends WP_Widget {
 			$itemsToShow = 15;
 		if($itemsToShow < 0)
 			$itemsToShow = 0;
+
+		$gameStr;
+		switch ($gameToShow) {
+			case 'Starcraft':
+				$gameStr = 'sc2';
+				break;
+			case 'Warcraft':
+				$gameStr = 'wow';
+				break;
+			case 'Diablo':
+				$gameStr = 'd3';
+				break;
+			default:
+				$regionStr = 'sc2';
+		}
+
+		$regionStr;
+		$serverStr;
+		switch($gameRegion){
+			case 'US':
+				$regionStr = 'en';
+				$serverStr = 'us';
+				break;
+			case 'EU-EN':
+				$regionStr = 'en';
+				$serverStr = 'eu';
+				break;
+			case 'FR':
+				$regionStr = 'fr';
+				$serverStr = 'eu';
+				break;
+			case 'DE':
+				$regionStr = 'de';
+				$serverStr = 'eu';
+				break;
+			case 'EU-ES':
+				$regionStr = 'es';
+				$serverStr = 'eu';
+				break;
+			case 'US-ES':
+				$regionStr = 'es';
+				$serverStr = 'us';
+				break;
+			default:
+				$regionStr = 'en';
+				$serverStr = 'us';
+		}
 			
 		for ($i = 0; $i < $itemsToShow ; $i++) {
 			$thisStrPosStart = strpos($myContent,"<tr id=\"postRow",$lastEnd);
@@ -331,21 +379,7 @@ class blizzBlue_Widget extends WP_Widget {
 			$blueName  = trim($blueName);
 			
 			//Replace ../ by right forum link
-			if($gameRegion === 'US'){
-				if($gameToShow  === 'Starcraft')
-				$tempContent = str_replace ("href=\"../"," target=\"_blank\" title=\"Post Author: " . $blueName . "\" href=\"http://us.battle.net/sc2/en/forum/",$tempContent);
-				else if ($gameToShow === 'Warcraft')
-					$tempContent = str_replace ("href=\"../"," target=\"_blank\" title=\"Post Author: " . $blueName . "\" href=\"http://us.battle.net/wow/en/forum/",$tempContent);
-					else if ($gameToShow === 'Diablo')
-						$tempContent = str_replace ("href=\"../"," target=\"_blank\" title=\"Post Author: " . $blueName . "\" href=\"http://us.battle.net/d3/en/forum/",$tempContent);		
-			}else if($gameRegion === 'EU'){
-				if($gameToShow  === 'Starcraft')
-					$tempContent = str_replace ("href=\"../"," target=\"_blank\" title=\"Post Author: " . $blueName . "\" href=\"http://eu.battle.net/sc2/en/forum/",$tempContent);
-					else if ($gameToShow === 'Warcraft')
-						$tempContent = str_replace ("href=\"../"," target=\"_blank\" title=\"Post Author: " . $blueName . "\" href=\"http://eu.battle.net/wow/en/forum/",$tempContent);
-						else if ($gameToShow === 'Diablo')
-							$tempContent = str_replace ("href=\"../"," target=\"_blank\" title=\"Post Author: " . $blueName . "\" href=\"http://eu.battle.net/d3/en/forum/",$tempContent);	
-			}
+			$tempContent = str_replace ("href=\"../"," target=\"_blank\" title=\"Post Author: " . $blueName . "\" href=\"http://" . $serverStr . ".battle.net/" . $gameStr . "/" . $regionStr ."/forum/",$tempContent);
 			
 			//Add Blizz logo in title			
 			$tempContent = $this->str_insert("<img src=\"http://us.battle.net/sc2/static/images/layout/cms/icon_blizzard.gif\" title=\"Post Author: " . $blueName . "\"></img>", $tempContent, 18);
