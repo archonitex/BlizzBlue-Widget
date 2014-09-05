@@ -32,19 +32,9 @@ class blizzBlue_Widget extends WP_Widget {
 	function form( $instance ) {
 
 		/* Set up some default widget settings. */
-		$defaults = array( 'title' => 'Blue Tracker', 'game_to_show' => 'All', 'items_to_show' => 5, 'showForumOrigin' => 'No','showDatePost' => 'No', 'gameRegion' => 'US', 'liveFeed' => 'No');
+		$defaults = array( 'title' => 'Blue Tracker', 'game_to_show' => 'All', 'items_to_show' => 5, 'showForumOrigin' => 'No','showDatePost' => 'No', 'gameRegion' => 'US');
 		$instance = wp_parse_args( (array) $instance, $defaults ); ?>
-
-		<p>
-			<label for="<?php echo $this->get_field_id( 'liveFeed' ); ?>">Use Live Feed? (High traffic websites should use "No". If your are receiving CURL error with live feed, try "No")</label>
-
-			<select id="<?php echo $this->get_field_id( 'liveFeed' ); ?>" name="<?php echo $this->get_field_name( 'liveFeed'); ?>" class="widefat" style="width:100%;">
-				<option <?php if ( 'Yes' == $instance['liveFeed']) echo 'selected="selected"'; ?>>Yes</option>
-				<option <?php if ( 'No' == $instance['liveFeed'] ) echo 'selected="selected"'; ?>>No</option>
-			</select>
-				
-		</p>
-		
+	
 		<p>
 			<label for="<?php echo $this->get_field_id( 'title' ); ?>">Title:</label>
 			<input id="<?php echo $this->get_field_id( 'title' ); ?>" name="<?php echo $this->get_field_name( 'title' ); ?>" value="<?php echo $instance['title']; ?>" style="width:100%;" />
@@ -113,7 +103,6 @@ class blizzBlue_Widget extends WP_Widget {
 		$instance['showForumOrigin'] = $new_instance['showForumOrigin'];
 		$instance['showDatePost'] = $new_instance['showDatePost'];	
 		$instance['gameRegion'] = $new_instance['gameRegion'];	
-		$instance['liveFeed'] = $new_instance['liveFeed'];
 		
 		return $instance;
 	}
@@ -126,51 +115,7 @@ class blizzBlue_Widget extends WP_Widget {
 	   $whole = $part1 . $part2;
 	   return $whole;
 	}
-
-	function getfileurl($region, $game)
-	{
-		$gameStr;
-		switch ($game) {
-			case 'Starcraft':
-				$gameStr = 'sc2';
-				break;
-			case 'Warcraft':
-				$gameStr = 'WoW';
-				break;
-			case 'Diablo':
-				$gameStr = 'D3';
-				break;
-			default:
-				$regionStr = 'sc2';
-		}
-
-		$regionStr;
-		switch($region){
-			case 'US':
-				$regionStr = '';
-				break;
-			case 'EU-EN':
-				$regionStr = 'EU';
-				break;
-			case 'FR':
-				$regionStr = 'EUFR';
-				break;
-			case 'DE':
-				$regionStr = 'EUDE';
-				break;
-			case 'EU-ES':
-				$regionStr = 'EUES';
-				break;
-			case 'US-ES':
-				$regionStr = 'USES';
-				break;
-			default:
-				$regionStr = '';
-		}
-
-		return "http://www.wrclan.com/wp-content/plugins/BlizzBlueWidget/" . $regionStr . $gameStr . "Tracker.txt";
 	
-	}
 	function get_liveFeed($region, $game)
 	{
 		$gameStr;
@@ -252,7 +197,6 @@ class blizzBlue_Widget extends WP_Widget {
 		$showForumOrigin = $instance['showForumOrigin'];
 		$showDatePost = $instance['showDatePost'];
 		$gameRegion = $instance['gameRegion'];
-		$liveFeed = $instance['liveFeed'];
 		
 		/* Before widget (defined by themes). */
 		echo $before_widget;
@@ -262,23 +206,13 @@ class blizzBlue_Widget extends WP_Widget {
 		
 		
 		// WIDGET CODE GOES HERE
-		if($liveFeed === 'No'){
-			$fileURL = $this->getFileURL($gameRegion,$gameToShow);
-			$myFile = file_get_contents($fileURL);
-		}else{
-			$myFile = $this->get_liveFeed($gameRegion,$gameToShow);
-		}
+		$myFile = $this->get_liveFeed($gameRegion,$gameToShow);
 		
 		//Start from <tbody class="bluetracker-body">
 		//End at </tbody>
 		$myStart = strpos($myFile,"<tbody class=\"bluetracker-body\">");
 		if($myStart === false){
-			if($liveFeed === 'No'){
-				$fileURL = $this->getFileURL($gameRegion,$gameToShow);
-				$myFile = file_get_contents($fileURL);
-			}else{
-				$myFile = $this->get_liveFeed($gameRegion,$gameToShow);				
-			}
+			$myFile = $this->get_liveFeed($gameRegion,$gameToShow);		
 			
 			$myStart = strpos($myFile,"<tbody class=\"bluetracker-body\">");
 			if($myStart === false){
