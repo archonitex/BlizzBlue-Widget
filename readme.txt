@@ -26,9 +26,13 @@ The update might have included some changes which require you to re-save the wid
 
 == Changelog ==
 
-= 3.0 =
+= 4.0 =
+* Added Hearthstone Support
 * Updated to properly parse new Blizzard tracker
 * Removed alternate method of pulling tracker which pointed to my own website
+
+= 3.0 =
+* Bug fixes, added other languages
 
 = 2.1 =
 * Bug Fix : When Battle.net website is down the plugin will access a cached copy of the website stored on my private server. If the plugin cannot access either of the sources, a message will indicate that no blue posts are available at this time.
@@ -47,6 +51,7 @@ The update might have included some changes which require you to re-save the wid
 == Upgrade Notice ==
 
 = 4.0 =
+* Added Hearthstone Support
 * Updated to properly parse new Blizzard tracker
 * Removed alternate method of pulling tracker which pointed to my own website
 
