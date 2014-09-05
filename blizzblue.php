@@ -85,6 +85,7 @@ class blizzBlue_Widget extends WP_Widget {
 				<option <?php if ( 'EU-EN' == $instance['gameRegion'] ) echo 'selected="selected"'; ?>>EU-EN</option>
 				<option <?php if ( 'FR' == $instance['gameRegion'] ) echo 'selected="selected"'; ?>>FR</option>
 				<option <?php if ( 'DE' == $instance['gameRegion'] ) echo 'selected="selected"'; ?>>DE</option>
+				<option <?php if ( 'RU' == $instance['gameRegion'] ) echo 'selected="selected"'; ?>>RU</option>
 				<option <?php if ( 'EU-ES' == $instance['gameRegion'] ) echo 'selected="selected"'; ?>>EU-ES</option>
 				<option <?php if ( 'US-ES' == $instance['gameRegion'] ) echo 'selected="selected"'; ?>>US-ES</option>
 			</select>
