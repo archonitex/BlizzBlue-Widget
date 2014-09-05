@@ -2,7 +2,7 @@
 Contributors: senatorsfc
 Tags: Starcraft, Blue posts, forum posts, Diablo, Warcraft, Blizzard
 Requires at least: 4.0
-Tested up to: 3.5.1
+Tested up to: 4.0
 Stable tag: 4.0
 
 
