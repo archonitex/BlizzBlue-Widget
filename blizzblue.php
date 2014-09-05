@@ -72,6 +72,7 @@ class blizzBlue_Widget extends WP_Widget {
 				<option <?php if ( 'Starcraft' == $instance['game_to_show'] ) echo 'selected="selected"'; ?>>Starcraft</option>
 				<option <?php if ( 'Warcraft' == $instance['game_to_show'] ) echo 'selected="selected"'; ?>>Warcraft</option>
 				<option <?php if ( 'Diablo' == $instance['game_to_show'] ) echo 'selected="selected"'; ?>>Diablo</option>
+				<option <?php if ( 'Hearthstone' == $instance['game_to_show'] ) echo 'selected="selected"'; ?>>Hearthstone</option>
 			</select>
 				
 		</p>
@@ -128,6 +129,9 @@ class blizzBlue_Widget extends WP_Widget {
 				break;
 			case 'Diablo':
 				$gameStr = 'd3';
+				break;
+			case 'Hearthstone':
+				$gameStr = 'hearthstone';
 				break;
 			default:
 				$regionStr = 'sc2';
@@ -202,8 +206,7 @@ class blizzBlue_Widget extends WP_Widget {
 		echo $before_widget;
 		/* Title of widget (before and after defined by themes). */
 		if ( $title )
-			echo $before_title . $title . $after_title;
-		
+			echo $before_title . $title . $after_title;		
 		
 		// WIDGET CODE GOES HERE
 		$myFile = $this->get_liveFeed($gameRegion,$gameToShow);
@@ -242,6 +245,9 @@ class blizzBlue_Widget extends WP_Widget {
 				break;
 			case 'Diablo':
 				$gameStr = 'd3';
+				break;
+			case 'Hearthstone':
+				$gameStr = 'hearthstone';
 				break;
 			default:
 				$regionStr = 'sc2';
