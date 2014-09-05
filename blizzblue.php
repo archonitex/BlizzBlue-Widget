@@ -4,9 +4,9 @@ Plugin Name: BlizzBlueWidget
 Plugin URI: http://dev.wrclan.com/
 Description: Adds a widget to your wordpress theme that gets the latest blue posts for Starcraft 2, Diablo 3 and WoW.
 Author: Francis Carriere
-Version: 4.0
+Version: 4.1
 Author URI: http://wrclan.com/
-Stable tag: 4.0
+Stable tag: 4.1
 */
 
 /* Add our function to the widgets_init hook. */
@@ -217,6 +217,10 @@ class blizzBlue_Widget extends WP_Widget {
 				$regionStr = 'de';
 				$serverStr = 'eu';
 				break;
+			case 'RU':
+				$regionStr = 'ru';
+				$serverStr = 'eu';
+			break;
 			case 'EU-ES':
 				$regionStr = 'es';
 				$serverStr = 'eu';
