@@ -4,9 +4,9 @@ Plugin Name: BlizzBlueWidget
 Plugin URI: http://dev.wrclan.com/
 Description: Adds a widget to your wordpress theme that gets the latest blue posts for Starcraft 2, Diablo 3 and WoW.
 Author: Francis Carriere
-Version: 3.0
+Version: 4.0
 Author URI: http://wrclan.com/
-Stable tag: 3.0
+Stable tag: 4.0
 */
 
 /* Add our function to the widgets_init hook. */
@@ -116,6 +116,67 @@ class blizzBlue_Widget extends WP_Widget {
 	   $whole = $part1 . $part2;
 	   return $whole;
 	}
+
+	function extractTitle($element)
+	{
+		$divs = $element->getElementsByTagName("div");
+
+		foreach($divs as $div){
+			$divClass = $div->getAttribute('class');
+
+			if($divClass == 'desc'){
+
+				$title = $div->getElementsByTagName("a")->item(1)->textContent;
+				$titleLink = $div->getElementsByTagName("a")->item(1)->getAttribute('href');
+				
+
+				return '<a target="_blank" href="http://us.battle.net' . $titleLink . '" >' . $title . '</a>';
+			}
+		}
+	}
+
+	function extractBlueName($element)
+	{
+		$spans = $element->getElementsByTagName("span");
+
+		foreach($spans as $span){
+			$spanClass = $span->getAttribute('class');
+
+			if($spanClass == 'author-name blizzard-post'){
+				return $span->textContent;
+			}
+		}
+	}
+
+	function extractPostDate($element)
+	{
+		$spans = $element->getElementsByTagName("span");
+
+		foreach($spans as $span){
+			$spanClass = $span->getAttribute('class');
+
+			if($spanClass == 'last-post-time'){
+				return $span->textContent;
+			}
+		}
+	}
+
+	function extractForumOrigin($element, $gameStr, $regionStr)
+	{
+		$divs = $element->getElementsByTagName("div");
+
+		foreach($divs as $div){
+			$divClass = $div->getAttribute('class');
+
+			if($divClass == 'desc'){
+
+				$title = $div->getElementsByTagName("a")->item(0)->textContent;
+				$originLink = $div->getElementsByTagName("a")->item(0)->getAttribute('href');
+
+				return 'in <a target="_blank" href="http://us.battle.net/' . $gameStr . '/' . $regionStr . '/forum/' . str_replace('../','',$originLink) . '" > ' . $title . '</a>';
+			}
+		}
+	}
 	
 	function get_liveFeed($region, $game)
 	{
@@ -173,6 +234,9 @@ class blizzBlue_Widget extends WP_Widget {
 
 		$url = "http://" . $serverStr . ".battle.net/" . $gameStr . "/" . $regionStr . "/forum/blizztracker/";
 		
+		return $url;
+
+		/*
 		try{
 			$ch = curl_init();
 	 		$timeout = 5;
@@ -185,7 +249,7 @@ class blizzBlue_Widget extends WP_Widget {
 	  		return $data;
 		} catch (Exception $e) {
 			echo "Error Retrieving Blue posts. CURL error : " . $e->getMessage(); 
-		}
+		}*/
 	}
 	
 	function widget( $args, $instance ) {
@@ -206,29 +270,7 @@ class blizzBlue_Widget extends WP_Widget {
 		echo $before_widget;
 		/* Title of widget (before and after defined by themes). */
 		if ( $title )
-			echo $before_title . $title . $after_title;		
-		
-		// WIDGET CODE GOES HERE
-		$myFile = $this->get_liveFeed($gameRegion,$gameToShow);
-		
-		//Start from <tbody class="bluetracker-body">
-		//End at </tbody>
-		$myStart = strpos($myFile,"<tbody class=\"bluetracker-body\">");
-		if($myStart === false){
-			$myFile = $this->get_liveFeed($gameRegion,$gameToShow);		
-			
-			$myStart = strpos($myFile,"<tbody class=\"bluetracker-body\">");
-			if($myStart === false){
-				echo 'No Blue Posts Available';
-				echo $after_widget;
-				return;
-			}
-		}
-		
-		$myEnd = strpos($myFile,"</tbody>",$myStart);
-		$myContent = substr($myFile,$myStart,$myEnd);		
-
-		$lastEnd = 0;
+			echo $before_title . $title . $after_title;
 		
 		if($itemsToShow > 15)
 			$itemsToShow = 15;
@@ -284,51 +326,68 @@ class blizzBlue_Widget extends WP_Widget {
 				$regionStr = 'en';
 				$serverStr = 'us';
 		}
-			
-		for ($i = 0; $i < $itemsToShow ; $i++) {
-			$thisStrPosStart = strpos($myContent,"<tr id=\"postRow",$lastEnd);
-			$thisStrPosEnd = strpos($myContent,"</tr>",$thisStrPosStart);
-			
-			//Find Post Title
-			$desc = strpos($myContent,"<div class=\"desc\">",$thisStrPosStart);
-			$descEnd = strpos($myContent,"</div>",$desc);
-			$lastEnd = $descEnd;
-			
-			$tempContent = substr($myContent,$desc,$descEnd-$desc+6);	
-			
-			if($showDatePost === 'No'){
-				//Remove Post Date (We start at 2nd </a>
-				$trimfirst = strpos($tempContent,"</a>");
-				$trimStart= strpos($tempContent,"</a>",$trimfirst + 4);
-				$trimStart = $trimStart + 4;
-				$trimEnd = strpos($tempContent,"</div>",$trimStart);
-				$tempContent = substr_replace ( $tempContent, "" , $trimStart, $trimEnd-$trimStart);
-			}
-			if($showForumOrigin === 'No'){
-				//Remove Forum Origin
-				$trimStart = strpos($tempContent,"[<a");
-				$trimEnd = strpos($tempContent,"]",$trimStart);
-				$tempContent = substr_replace ( $tempContent, "" , $trimStart, $trimEnd-$trimStart +1);
-			}
-			
-			//Get BluePoster Name
-			//Find Post Title
-			$blue = strpos($myContent,"<span class=\"type-blizzard\">",$thisStrPosStart);
-			$blueEnd = strpos($myContent,"<img",$blue);
-			$blueName = substr($myContent,$blue+28,$blueEnd-$blue-28);	
-			$blueName  = trim($blueName);
-			
-			//Replace ../ by right forum link
-			$tempContent = str_replace ("href=\"../"," target=\"_blank\" title=\"Post Author: " . $blueName . "\" href=\"http://" . $serverStr . ".battle.net/" . $gameStr . "/" . $regionStr ."/forum/",$tempContent);
-			
-			//Add Blizz logo in title			
-			$tempContent = $this->str_insert("<img src=\"http://us.battle.net/sc2/static/images/layout/cms/icon_blizzard.gif\" title=\"Post Author: " . $blueName . "\"></img>", $tempContent, 18);
 
-			
-			echo $tempContent;
-		}		 
-		
-		
+		$dom = new DomDocument();
+		$dom->load($this->get_liveFeed($gameRegion,$gameToShow));
+		$finder = new DomXPath($dom);
+		$classname = 'forum-topics';			
+		$nodes = $finder->query("//*[contains(concat(' ', normalize-space(@class), ' '), ' $classname ')]");
+		$table = $nodes->item(0);
+
+		$rows = $table->getElementsByTagName("tr");
+
+		$itemCount = 0;
+		foreach ($rows as $row){
+			if($itemCount > $itemsToShow) break;
+
+			$cells = $row->getElementsByTagName("td");
+	    	foreach ($cells as $cell){
+	    		$tdClass = $cell->getAttribute('class');
+
+	    		$postTitle;
+	    		$blueName;
+	    		$postDate;
+	    		$forumOrigin;
+	    		
+	    		switch($tdClass){
+	    			case 'title-cell':
+	    			$postTitle = $this->extractTitle($cell);
+	    			$forumOrigin = $this->extractForumOrigin($cell, $gameStr, $regionStr);
+	    			break;
+
+	    			case 'author-cell':
+	    			$blueName = $this->extractBlueName($cell);
+	    			break;
+
+	    			case 'last-post-cell':
+	    			$postDate = $this->extractPostDate($cell);
+	    			break;
+
+	    			default:
+	    			break;
+	    		}
+	    	}
+
+	    	if(!isset($postTitle) || trim($postTitle)==='') continue;
+
+	    	echo "<div> $postTitle </div>";
+
+	    	echo "<div><img src='http://us.battle.net/sc2/static/images/layout/cms/icon_blizzard.gif' style='top:2px;position:relative;' /> " . $blueName . " ";
+
+	    	if($showForumOrigin == 'Yes'){
+	    		echo $forumOrigin;
+	    	}
+
+	    	echo "</div>";
+
+	    	if($showDatePost == 'Yes'){
+	    		echo "<div> $postDate </div>" ;
+	    	}
+
+	    	echo "</br>";
+
+			$itemCount++;
+		}
 
 		/* After widget (defined by themes). */
 		echo $after_widget;
@@ -336,3 +395,5 @@ class blizzBlue_Widget extends WP_Widget {
 	
 	
 }
+
+?>

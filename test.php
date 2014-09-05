@@ -98,12 +98,28 @@
 
 	function extractBlueName($element)
 	{
-		
+		$spans = $element->getElementsByTagName("span");
+
+		foreach($spans as $span){
+			$spanClass = $span->getAttribute('class');
+
+			if($spanClass == 'author-name blizzard-post'){
+				return $span->textContent;
+			}
+		}
 	}
 
 	function extractPostDate($element)
 	{
+		$spans = $element->getElementsByTagName("span");
 
+		foreach($spans as $span){
+			$spanClass = $span->getAttribute('class');
+
+			if($spanClass == 'last-post-time'){
+				return $span->textContent;
+			}
+		}
 	}
 
 	function extractForumOrigin($element, $gameStr, $regionStr)
