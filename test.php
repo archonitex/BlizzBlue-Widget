@@ -60,6 +60,8 @@
 
 		$url = "http://" . $serverStr . ".battle.net/" . $gameStr . "/" . $regionStr . "/forum/blizztracker/";
 
+		return $url;
+
 		try{
 			$ch = curl_init();
 	 		$timeout = 5;
@@ -76,136 +78,101 @@
 	}
 
 
+	function extractTitle($element)
+	{
+		$divs = $element->getElementsByTagName("div");
 
+		foreach($divs as $div){
+			$divClass = $div->getAttribute('class');
 
+			if($divClass == 'desc'){
 
+				$title = $div->getElementsByTagName("a")->item(1)->textContent;
+				$titleLink = $div->getElementsByTagName("a")->item(1)->getAttribute('href');
+				
 
+				return '<a href="http://us.battle.net' . $titleLink . '" >' . $title . '</a>';
+			}
+		}
+	}
 
+	function extractBlueName($element)
+	{
+		
+	}
 
+	function extractPostDate($element)
+	{
 
+	}
 
+	function extractForumOrigin($element, $gameStr, $regionStr)
+	{
+		$divs = $element->getElementsByTagName("div");
 
+		foreach($divs as $div){
+			$divClass = $div->getAttribute('class');
 
+			if($divClass == 'desc'){
 
+				$title = $div->getElementsByTagName("a")->item(0)->textContent;
+				$originLink = $div->getElementsByTagName("a")->item(0)->getAttribute('href');
+
+				return '<a href="http://us.battle.net/' . $gameStr . '/' . $regionStr . '/forum/' . str_replace('../','',$originLink) . '" >' . $title . '</a>';
+			}
+		}
+	}
 
 		$gameRegion = 'US';
 		$gameToShow = 'Starcraft';
 		$itemsToShow = 1;
 		
-		$myFile = get_liveFeed($gameRegion,$gameToShow);
+		$dom = new DomDocument();
+		$dom->load(get_liveFeed($gameRegion,$gameToShow));
+		$finder = new DomXPath($dom);
+		$classname = 'forum-topics';			
+		$nodes = $finder->query("//*[contains(concat(' ', normalize-space(@class), ' '), ' $classname ')]");
+		$table = $nodes->item(0);
+
+		$rows = $table->getElementsByTagName("tr");
+
+		foreach ($rows as $row) 
+	    {
+	    	$cells = $row->getElementsByTagName("td");
+	    	foreach ($cells as $cell){
+	    		$tdClass = $cell->getAttribute('class');
+
+	    		$title;
+	    		$blueName;
+	    		$postDate;
+	    		$forumOrigin;
+	    		
+	    		switch($tdClass){
+	    			case 'title-cell':
+	    			$title = extractTitle($cell);
+	    			$forumOrigin = extractForumOrigin($cell, 'sc2', 'us');
+	    			break;
+
+	    			case 'author-cell':
+	    			$blueName = extractBlueName($cell);
+	    			break;
+
+	    			case 'last-post-cell':
+	    			$postDate = extractPostDate($cell);
+	    			break;
+
+	    			default:
+	    			break;
+	    		}
+
+	    		echo "\n";
+	    		echo 'POST!' . "\n";
+	    		echo 'TITLE : ' . $title . "\n";
+	    		echo 'POST ORIGIN : ' . $forumOrigin . "\n";
+	    		echo 'BLUENAME : ' . $blueName . "\n";
+	    		echo 'POSTDATE : ' . $postDate . "\n";
+	    	} 
+	    }
 		
-		//Start from <tbody class="bluetracker-body">
-		//End at </tbody>
-		$myStart = strpos($myFile,"<tbody>");
-		if($myStart === false){
-			$myFile = get_liveFeed($gameRegion,$gameToShow);		
-			
-			$myStart = strpos($myFile,"<tbody>");
-			if($myStart === false){
-				echo 'No Blue Posts Available';
-				return;
-			}
-		}
-		
-
-		$myEnd = strpos($myFile,"</tbody>",$myStart);
-		$myContent = substr($myFile,$myStart,$myEnd);	
-
-		$lastEnd = 0;
-		
-		if($itemsToShow > 15)
-			$itemsToShow = 15;
-		if($itemsToShow < 0)
-			$itemsToShow = 0;
-
-		$gameStr;
-		switch ($gameToShow) {
-			case 'Starcraft':
-				$gameStr = 'sc2';
-				break;
-			case 'Warcraft':
-				$gameStr = 'wow';
-				break;
-			case 'Diablo':
-				$gameStr = 'd3';
-				break;
-			default:
-				$regionStr = 'sc2';
-		}
-
-		$regionStr;
-		$serverStr;
-		switch($gameRegion){
-			case 'US':
-				$regionStr = 'en';
-				$serverStr = 'us';
-				break;
-			case 'EU-EN':
-				$regionStr = 'en';
-				$serverStr = 'eu';
-				break;
-			case 'FR':
-				$regionStr = 'fr';
-				$serverStr = 'eu';
-				break;
-			case 'DE':
-				$regionStr = 'de';
-				$serverStr = 'eu';
-				break;
-			case 'EU-ES':
-				$regionStr = 'es';
-				$serverStr = 'eu';
-				break;
-			case 'US-ES':
-				$regionStr = 'es';
-				$serverStr = 'us';
-				break;
-			default:
-				$regionStr = 'en';
-				$serverStr = 'us';
-		}
-			
-		for ($i = 0; $i < $itemsToShow ; $i++) {
-			$thisStrPosStart = strpos($myContent,"<tr id=\"postRow",$lastEnd);
-			$thisStrPosEnd = strpos($myContent,"</tr>",$thisStrPosStart);
-			
-			//Find Post Title
-			$desc = strpos($myContent,"<div class=\"desc\">",$thisStrPosStart);
-			$descEnd = strpos($myContent,"</div>",$desc);
-			$lastEnd = $descEnd;
-			
-			$tempContent = substr($myContent,$desc,$descEnd-$desc+6);	
-			
-			if($showDatePost === 'No'){
-				//Remove Post Date (We start at 2nd </a>
-				$trimfirst = strpos($tempContent,"</a>");
-				$trimStart= strpos($tempContent,"</a>",$trimfirst + 4);
-				$trimStart = $trimStart + 4;
-				$trimEnd = strpos($tempContent,"</div>",$trimStart);
-				$tempContent = substr_replace ( $tempContent, "" , $trimStart, $trimEnd-$trimStart);
-			}
-			if($showForumOrigin === 'No'){
-				//Remove Forum Origin
-				$trimStart = strpos($tempContent,"[<a");
-				$trimEnd = strpos($tempContent,"]",$trimStart);
-				$tempContent = substr_replace ( $tempContent, "" , $trimStart, $trimEnd-$trimStart +1);
-			}
-			
-			//Get BluePoster Name
-			//Find Post Title
-			$blue = strpos($myContent,"<span class=\"type-blizzard\">",$thisStrPosStart);
-			$blueEnd = strpos($myContent,"<img",$blue);
-			$blueName = substr($myContent,$blue+28,$blueEnd-$blue-28);	
-			$blueName  = trim($blueName);
-			
-			//Replace ../ by right forum link
-			$tempContent = str_replace ("href=\"../"," target=\"_blank\" title=\"Post Author: " . $blueName . "\" href=\"http://" . $serverStr . ".battle.net/" . $gameStr . "/" . $regionStr ."/forum/",$tempContent);
-			
-			//Add Blizz logo in title			
-			$tempContent = str_insert("<img src=\"http://us.battle.net/sc2/static/images/layout/cms/icon_blizzard.gif\" title=\"Post Author: " . $blueName . "\"></img>", $tempContent, 18);
-
-			
-			echo $tempContent;
-		}	
 
 ?>
